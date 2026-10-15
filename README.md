@@ -1,56 +1,49 @@
-# Welcome to your Expo app 👋
+# Seja bem-vindo ao SafeCrash App👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### Identificação: Grupo 7
+* Emilly n° 08
+* Lívia n° 17
+* Ibide n° 23
+* Vinicius n° 29
 
-## Get started
+### 📌 Tema: Resiliência contra crashes, tratamento de exceções assíncronas e Erro Boundaries no React.
+Estratégia essencial formada para evitar que um erro pontual derrube a interface inteira do usuário.
 
-1. Install dependencies
+### O que faz a resiliência contra Crashes?
+Essa fase do projeto é a prática de planejar a hierarquia de componentes para conter falhas. Isolando componentes para que caso haja falha em algum, os outros permaneçam funcionando sem problemas e/ou a criação de um botão para resetar o estado de erro.
 
-   ```bash
-   npm install
-   ```
+### O que são Error Boundaries?
+Eles são componentes criados para capturar erros ocorridos durante a renderização do JavaScript em qualquer parte do projeto, fazendo com que exiba uma interface alternativa (fallback) ao invés de aparecer uma tela em branco.
 
-2. Start the app
+### E o tratamento de exceções assíncronas?
+Eles servem para capturar erros que ocorrem fora do ciclo de renderização, ou seja, que os Error Boundaries não capturam. Usando blocos de código com try/catch ou um useState para armazenar a falha e exibir uma mensagem de aviso.
 
-   ```bash
-   npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+## Como a solução prática foi desenvolvida e como o problema de segurança/qualidade foi resolvido no código.
+ A solução foi desenvolvida utilizando o ecossistema React, com foco em componentização reutilizável e gerenciamento eficiente de estados. Para resolver as grandes falhas que são comuns nos ambientes móveis, a arquitetura do aplicativo foi estruturada para interceptar exceções antes que elas afetassem o sistema operacional do dispositivo. O problema de segurança e de qualidade foram resolvidos durante a fase de testes, neste momento identificamos que os erros inesperados na renderização de componentes secundários (como falhas ao processar uma propriedade nula vinda de uma API) estavam quebrando toda a árvore de componentes da interface, o que provocava um fechamento repentino do aplicativo (crash) ou travamentos visuais. 
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Screenshots:
+![print-project](image.png)
+<img src="image.png" alt="Print do sistema" width="500">
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
-
-When you're ready, run:
-
+## Manual de Execução:
+1. #### Baixar o projeto para o computador: 
 ```bash
-npm run reset-project
+git clone https://github.com 
+``` 
+Copia os arquivos da intenet para o seu computador
+
+2. #### Instalar as bibliotecas do aplicativo: 
+```bash 
+npm install
 ```
+ Baixar todos os pacotes necessários para o app rodar, tipo o Expo e o react-error-boundary
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+3. #### Rodar o aplicativo: 
+```bash
+npx expo start --lan 
+```
+Liga o servidor do app e gera o QR Code, este código trabalha com a Rede Local, ou seja, o computador e o celular estão no mesmo Wi-fi.
 
-### Other setup steps
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
