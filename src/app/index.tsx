@@ -1,98 +1,249 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { BrokenComponent } from "../components/BrokenComponent";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+// Componente que simula errode iteração em dados nulos
+function BrokenArrayComponent() {
+  const list: any = null;
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
+    <View>
+      {/* Tentar rodar o .map() em um valor null dispara o erro */}
+      {list.map((item: any) => (
+        <Text>{item}</Text>
+      ))}
+    </View>
   );
 }
 
-export default function HomeScreen() {
+// Componente que tenta executar um método que não existe
+function BrokenReferenceComponent() {
+  const user: any = {}; // Objeto vazio
+  // Chama uma função inexistente
+  return <Text>{user.nonExistentFunction()}</Text>;
+}
+
+export default function App() {
+  // Armazena o tipo de erro acionado
+  const [errorType, setErrorType] = useState<string | null>(null);
+  
+  // Controla a animação e mensagens da requisição
+  const [loading, setLoading] = useState(false);
+  const [asyncMessage, setAsyncMessage] = useState<string | null>(null);
+
+  // Tratamento assíncrono
+  const processJsonSimulated = async (corrupt: boolean) => {
+    setLoading(true);
+    setAsyncMessage(null);
+
+    try {
+      // Simulação de delay
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      let mockData: string;
+
+      if (corrupt) {
+        // String com chaves incorretas
+        mockData = "{nome: 'Inválido', semAspasDuplas ";
+      } else {
+        // String certo pra conversão
+        mockData = '{"nome": "SafeCrash App", "status": "Sucesso"}';
+      }
+
+      // Se 
+      const parsedData = JSON.parse(mockData);
+      setAsyncMessage(`✅ Sucesso ao ler JSON: ${parsedData.nome}`);
+    } catch (error: any) {
+      setAsyncMessage(`❌ Erro Assíncrono Capturado: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <SafeAreaView style={styles.safeArea}>
+      <ErrorBoundary onReset={() => setErrorType(null)}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={true}
+        >
+          <Text style={styles.headerTitle}>🛡️ SafeCrash App</Text>
+          <Text style={styles.subtitle}>
+            Grupo 7 — Demonstração de Resiliência
+          </Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              1. Exceções Assíncronas (Try/Catch)
+            </Text>
+            <Text style={styles.cardDescription}>
+              Simule a leitura de dados de rede recebendo um formato íntegro ou
+              corrompido.
+            </Text>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+            <View style={styles.rowButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonSuccess]}
+                onPress={() => processJsonSimulated(false)}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>JSON Válido</Text>
+              </TouchableOpacity>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonWarning]}
+                onPress={() => processJsonSimulated(true)}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>JSON Corrompido</Text>
+              </TouchableOpacity>
+            </View>
+
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color="#007AFF"
+                style={styles.loader}
+              />
+            )}
+
+            {asyncMessage && (
+              <View
+                style={[
+                  styles.messageBox,
+                  asyncMessage.startsWith("✅")
+                    ? styles.boxSuccess
+                    : styles.boxError,
+                ]}
+              >
+                <Text style={styles.messageText}>{asyncMessage}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              2. Erro de Propriedade Nula (TypeError)
+            </Text>
+            <Text style={styles.cardDescription}>
+              Tenta ler uma propriedade aninhada dentro de um objeto não
+              definido.
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonDanger]}
+              onPress={() => setErrorType("profile")}
+            >
+              <Text style={styles.buttonText}>Forçar Erro de Perfil</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              3. Erro de Mapeamento (TypeError: Map)
+            </Text>
+            <Text style={styles.cardDescription}>
+              Dispara uma falha ao tentar iterar (.map) sobre uma lista que
+              retornou nula da API.
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonDanger]}
+              onPress={() => setErrorType("array")}
+            >
+              <Text style={styles.buttonText}>Forçar Erro de Lista</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              4. Erro de Execução Inexistente
+            </Text>
+            <Text style={styles.cardDescription}>
+              Invoca uma função que não existe no escopo do componente em tempo
+              de execução.
+            </Text>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonDanger]}
+              onPress={() => setErrorType("reference")}
+            >
+              <Text style={styles.buttonText}>Forçar Função Inválida</Text>
+            </TouchableOpacity>
+          </View>
+
+          {errorType === "profile" && <BrokenComponent />}
+          {errorType === "array" && <BrokenArrayComponent />}
+          {errorType === "reference" && <BrokenReferenceComponent />}
+        </ScrollView>
+      </ErrorBoundary>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: { flex: 1, backgroundColor: "#F5F5F5" },
+  scrollContainer: { padding: 20, paddingBottom: 40 },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#1A1A1A",
+    marginTop: 20,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 6,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  rowButtons: { flexDirection: "row", justifyContent: "space-between" },
+  button: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 4,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  buttonSuccess: { backgroundColor: "#34C759" },
+  buttonWarning: { backgroundColor: "#FF9500" },
+  buttonDanger: { backgroundColor: "#FF3B30" },
+  buttonText: { color: "#FFF", fontSize: 14, fontWeight: "600" },
+  loader: { marginTop: 15 },
+  messageBox: {
+    marginTop: 15,
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 4,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  boxSuccess: { backgroundColor: "#E8F5E9", borderLeftColor: "#34C759" },
+  boxError: { backgroundColor: "#FFE5E5", borderLeftColor: "#FF3B30" },
+  messageText: { fontSize: 13, fontFamily: "monospace", color: "#333" },
 });
